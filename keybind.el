@@ -29,20 +29,6 @@
                      (throw 'gotit sym))))))
 
 
-(defun keymap-unset-key (keymap key)
-    "Remove binding of KEY in a KEYMAP
-`KEY' is a string or vector representing a sequence of keystrokes."
-    (interactive
-     (let* ((key (with-selected-window (minibuffer-window) 
-  	   (read-key-sequence-vector "Enter key combo: " nil t t t)))
-	    (map (completing-read "Which map: " (mapcar 'symbol-name (keymaps-with-key key)) nil t)))
-       (list key map)))
-    (let ((map (rest (assoc (intern keymap) minor-mode-map-alist))))
-      (when map
-        (define-key map key nil)
-        (message "%s unbound for %s" key keymap))))
-
-
 (defun keymaps-with-key (key)
   (reduce 
    (lambda (rest map) 
@@ -51,8 +37,27 @@
        rest))
    minor-mode-map-alist
    :initial-value nil))
-                
-        
+
+(defun completing-read-symbol (prompt collection)
+"Collection takes a list of symbols. (not an alist)"
+  (intern (completing-read prompt (mapcar (lambda (name) (cons (symbol-name name) nil)) collection) nil t)))
+
+(defun keymap-unset-key (key keymap)
+  "Remove binding of KEY in a KEYMAP
+KEY is a string or vector representing a sequence of keystrokes."
+  (interactive
+   (let* ((key (with-selected-window (minibuffer-window)
+		 (read-key-sequence-vector "Enter key combo: " nil t t t))))
+     (list key (completing-read-symbol "Which map: " (keymaps-with-key key)))))
+  (let* ((map (rest (assoc keymap minor-mode-map-alist))))
+    (if map
+	(progn 
+	  (define-key map key nil)
+	  (message "%s unbound for %s" key keymap))
+      (message "no key binding %s for keymap %s" key keymap))))
+
+
+
 ;;; Example: 
 
 ;(keymap-unset-key  '[C-M-left]   "paredit-mode")
