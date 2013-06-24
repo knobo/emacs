@@ -3,6 +3,10 @@
   (interactive "kKey combo: ")
   key)
 
+;;; Maybe this is better:
+;;; (with-selected-window (minibuffer-window) (read-key-sequence-vector "Enter key combo: " nil t t t))
+  
+
 (defun keymap-unset-key (key keymap)
     "Remove binding of KEY in a keymap
     KEY is a string or vector representing a sequence of keystrokes."
