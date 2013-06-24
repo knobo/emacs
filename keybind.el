@@ -46,10 +46,10 @@
   "Remove binding of KEY in a KEYMAP
 KEY is a string or vector representing a sequence of keystrokes."
   (interactive
-   (let* ((key (with-selected-window (minibuffer-window)
+   (let ((key (with-selected-window (minibuffer-window)
 		 (read-key-sequence-vector "Enter key combo: " nil t t t))))
      (list key (completing-read-symbol "Which map: " (keymaps-with-key key)))))
-  (let* ((map (rest (assoc keymap minor-mode-map-alist))))
+  (let ((map (rest (assoc keymap minor-mode-map-alist))))
     (if map
 	(progn 
 	  (define-key map key nil)
