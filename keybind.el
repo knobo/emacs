@@ -7,17 +7,51 @@
 ;;; (with-selected-window (minibuffer-window) (read-key-sequence-vector "Enter key combo: " nil t t t))
   
 
-(defun keymap-unset-key (key keymap)
-    "Remove binding of KEY in a keymap
-    KEY is a string or vector representing a sequence of keystrokes."
+;;(defun keymap-unset-key (key keymap)
+;;    "Remove binding of KEY in a keymap
+;;    KEY is a string or vector representing a sequence of keystrokes."
+;;    (interactive
+;;     (list (call-interactively #'get-key-combo)
+;;           (completing-read "Which map: " minor-mode-map-alist nil t)))
+;;    (let ((map (rest (assoc (intern keymap) minor-mode-map-alist))))
+;;      (when map
+;;        (define-key map key nil)
+;;        (message  "%s unbound for %s" key keymap))))
+        
+
+(defun keymap-symbol (keymap)
+  "Return the symbol to which KEYMAP is bound, or nil ifn o such symbol exists."
+  (catch 'gotit
+    (mapatoms (lambda (sym)
+                (and (boundp sym)
+                     (eq (symbol-value sym) keymap)
+                     (not (eq sym 'keymap))
+                     (throw 'gotit sym))))))
+
+
+(defun keymap-unset-key (keymap key)
+    "Remove binding of KEY in a KEYMAP
+`KEY' is a string or vector representing a sequence of keystrokes."
     (interactive
-     (list (call-interactively #'get-key-combo)
-           (completing-read "Which map: " minor-mode-map-alist nil t)))
+     (let* ((key (with-selected-window (minibuffer-window) 
+  	   (read-key-sequence-vector "Enter key combo: " nil t t t)))
+	    (map (completing-read "Which map: " (mapcar 'symbol-name (keymaps-with-key key)) nil t)))
+       (list key map)))
     (let ((map (rest (assoc (intern keymap) minor-mode-map-alist))))
       (when map
         (define-key map key nil)
-        (message  "%s unbound for %s" key keymap))))
-        
+        (message "%s unbound for %s" key keymap))))
+
+
+(defun keymaps-with-key (key)
+  (reduce 
+   (lambda (rest map) 
+     (if (lookup-key (rest map) key)
+	 (list* (first map) rest)
+       rest))
+   minor-mode-map-alist
+   :initial-value nil))
+                
         
 ;;; Example: 
 
