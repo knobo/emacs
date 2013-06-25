@@ -9,7 +9,8 @@
 (defun iswitchb-kill-buffer-display ()
   (interactive)
   (iswitchb-kill-buffer)
-  (display-buffer (second iswitchb-matches) t)
+  (if (> (length iswitchb-matches) 1)
+      (display-buffer (second iswitchb-matches) t))
   (setq iswitchb-rescan t))
 
 (defun iswitchb-exclude-nonmatching()
